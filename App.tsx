@@ -1,5 +1,6 @@
-import {  Text, View } from 'react-native';
+import { View } from 'react-native';
 import { useFonts, Roboto_400Regular, Roboto_700Bold } from '@expo-google-fonts/roboto';
+import { Routes } from '@routes/index';
 
 export default function App() {
   const [fonstLoaded] = useFonts({
@@ -12,8 +13,6 @@ export default function App() {
   }
 
   return (
-    <View >
-      <Text>Hello App</Text>
-    </View>
+    <Routes />
   );
 }
