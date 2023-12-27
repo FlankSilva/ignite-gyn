@@ -1,20 +1,23 @@
-import { NavigationContainer } from '@react-navigation/native'
-import { SafeAreaView } from 'react-native-safe-area-context'
+import { StatusBar, View } from 'react-native'
+import { NavigationContainer, DefaultTheme } from '@react-navigation/native'
 
+import { AuthRoutes } from './auth.routes'
 import { AppRoutes } from './app.routes'
-import { StatusBar } from 'react-native'
 
 export function Routes() {
+  const theme = DefaultTheme
+  theme.colors.background = '#121214'
+
   return (
-    <SafeAreaView className='flex-1 bg-background-page'>
+    <View className="flex-1 bg-gray-700">
       <NavigationContainer>
         <StatusBar
           barStyle={'light-content'}
-          backgroundColor='transparent'
+          backgroundColor="transparent"
           translucent
         />
         <AppRoutes />
       </NavigationContainer>
-    </SafeAreaView>
+    </View>
   )
 }

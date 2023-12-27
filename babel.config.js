@@ -1,9 +1,9 @@
-module.exports = function(api) {
-  api.cache(true);
+module.exports = function (api) {
+  api.cache(true)
   return {
     presets: ['babel-preset-expo'],
     plugins: [
-      "nativewind/babel",
+      'nativewind/babel',
       [
         'module-resolver',
         {
@@ -16,9 +16,9 @@ module.exports = function(api) {
             '@storage': './src/storage',
             '@theme': './src/theme',
             '@utils': './src/utils',
-          }
-        }
-      ]
-    ]
-  };
-};
+          },
+        },
+      ],
+    ],
+  }
+}
