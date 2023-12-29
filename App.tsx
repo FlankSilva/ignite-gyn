@@ -5,6 +5,7 @@ import {
 } from '@expo-google-fonts/roboto'
 import { Routes } from '@routes/index'
 import { Loading } from '@components/Loading'
+import AppProvider from './src/contexts'
 
 export default function App() {
   const [fonstLoaded] = useFonts({
@@ -16,5 +17,9 @@ export default function App() {
     return <Loading />
   }
 
-  return <Routes />
+  return (
+    <AppProvider>
+      <Routes />
+    </AppProvider>
+  )
 }

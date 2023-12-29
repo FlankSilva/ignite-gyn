@@ -22,6 +22,9 @@ module.exports = {
         500: '#00B37E',
         700: '#00875F',
       },
+      red: {
+        300: '#e74c3c',
+      },
     },
     fontFamily: {
       roboto_regular: 'Roboto_400Regular',

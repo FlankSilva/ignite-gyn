@@ -1,6 +1,14 @@
 import { useState } from 'react'
-import { ScrollView, Text, TouchableOpacity, View } from 'react-native'
+import {
+  Alert,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+  ToastAndroid,
+} from 'react-native'
 import * as ImagePicker from 'expo-image-picker'
+import * as FileSystem from 'expo-file-system'
 
 import { ScreenHeader } from '@components/ScreenHeader'
 import { UserPhoto } from '@components/UserPhoto'
@@ -9,14 +17,42 @@ import { Button } from '@components/Button'
 
 export function Profile() {
   const [photoIsLoading, setPhotoIsLoading] = useState(false)
+  const [userPhoto, setUserPhoto] = useState(
+    'https://github.com/flanksilva.png',
+  )
 
   async function handleUserPhotoSelect() {
-    await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      quality: 1,
-      aspect: [4, 4],
-      allowsEditing: true,
-    })
+    setPhotoIsLoading(true)
+    try {
+      const photoSelected = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        quality: 1,
+        aspect: [4, 4],
+        allowsEditing: true,
+      })
+
+      if (photoSelected.canceled) {
+        return true
+      }
+
+      if (photoSelected.assets[0].uri) {
+        const photoInfo = await FileSystem.getInfoAsync(
+          photoSelected.assets[0].uri,
+        )
+
+        if (photoInfo.exists) {
+          if (photoInfo.size && photoInfo.size / 1024 / 1024 > 2) {
+            return ToastAndroid.show('Imagem muito grande', ToastAndroid.SHORT)
+          }
+        }
+
+        setUserPhoto(photoSelected.assets[0].uri)
+      }
+    } catch (error) {
+      console.log(error)
+    } finally {
+      setPhotoIsLoading(false)
+    }
   }
 
   return (
@@ -26,7 +62,7 @@ export function Profile() {
       <ScrollView>
         <View className="w-full items-center mt-6 px-10 ">
           <UserPhoto
-            source={{ uri: 'https://github.com/flanksilva.png' }}
+            source={{ uri: userPhoto }}
             alt="Foto do usuário"
             size={148}
             isLoadingPhoto={photoIsLoading}
