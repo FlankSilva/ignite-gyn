@@ -5,17 +5,22 @@ import {
   TouchableOpacityProps,
   View,
 } from 'react-native'
+import { ExerciseDTO } from '@dtos/ExerciseDTO'
 import { Entypo } from '@expo/vector-icons'
 
-type Props = TouchableOpacityProps
+import { api } from '@services/api'
 
-export function ExerciseCard({ ...rest }: Props) {
+type Props = TouchableOpacityProps & {
+  data: ExerciseDTO
+}
+
+export function ExerciseCard({ data, ...rest }: Props) {
   return (
     <TouchableOpacity {...rest}>
       <View className="flex-row bg-gray-500 items-center p-2 pr-4 rounded-lg mb-3">
         <Image
           source={{
-            uri: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQhgqrA6g4aPy5maOMZxpb3dHAAjdmRFvUDwQ&usqp=CAU',
+            uri: `${api.defaults.baseURL}/exercise/thumb/${data.thumb}`,
           }}
           alt="Imagem do execício"
           width={67}
@@ -25,9 +30,9 @@ export function ExerciseCard({ ...rest }: Props) {
         />
 
         <View className="flex-1">
-          <Text className="text-lg text-white">Remada unilateral</Text>
+          <Text className="text-lg text-white">{data.name}</Text>
           <Text className="text-sm text-gray-200 mt-1" numberOfLines={2}>
-            3 séries x 12 repetições
+            {data.series} séries x {data.repetitions} repetições
           </Text>
         </View>
 

@@ -8,6 +8,12 @@ import {
 } from '@storage/storageUser'
 
 import { UserDataDTO, UserDataPropsDTO } from '@dtos/UserDTO'
+import {
+  storageAuthTokenGet,
+  storageAuthTokenRemove,
+  storageAuthTokenSave,
+} from '@storage/storageAhthToken'
+import { api } from '@services/api'
 
 type AuthContextProviderProps = {
   children: ReactNode
@@ -18,6 +24,12 @@ export const AuthContext = createContext({} as UserDataPropsDTO)
 const AuthProvider = ({ children }: AuthContextProviderProps) => {
   const [user, setUser] = useState<UserDataDTO>({} as UserDataDTO)
   const [isLoadingUserStorageData, setIsLoadingUserStorageData] = useState(true)
+
+  async function storageToken(token: string) {
+    await storageAuthTokenSave(token)
+
+    api.defaults.headers.common.Authorization = `Bearer ${token}`
+  }
 
   function handleUpdateDataUser({ id, name, email, avatar }: UserDataDTO) {
     setUser({
@@ -34,21 +46,6 @@ const AuthProvider = ({ children }: AuthContextProviderProps) => {
     })
   }
 
-  async function loadUserData() {
-    try {
-      const userLogged = await storageUserGet()
-
-      if (userLogged) {
-        setUser(userLogged)
-        setIsLoadingUserStorageData(false)
-      }
-    } catch (error) {
-      throw error
-    } finally {
-      setIsLoadingUserStorageData(false)
-    }
-  }
-
   async function signOut() {
     try {
       setIsLoadingUserStorageData(true)
@@ -56,6 +53,7 @@ const AuthProvider = ({ children }: AuthContextProviderProps) => {
       setUser({} as UserDataDTO)
 
       await storageUserRemove()
+      await storageAuthTokenRemove()
     } catch (error) {
       throw error
     } finally {
@@ -64,12 +62,37 @@ const AuthProvider = ({ children }: AuthContextProviderProps) => {
   }
 
   useEffect(() => {
+    async function loadUserData() {
+      try {
+        const userLogged = await storageUserGet()
+        const token = await storageAuthTokenGet()
+
+        if (token && userLogged) {
+          setUser(userLogged)
+          storageUserSave(userLogged)
+          storageToken(token)
+
+          setIsLoadingUserStorageData(false)
+        }
+      } catch (error) {
+        throw error
+      } finally {
+        setIsLoadingUserStorageData(false)
+      }
+    }
+
     loadUserData()
   }, [])
 
   return (
     <AuthContext.Provider
-      value={{ user, handleUpdateDataUser, isLoadingUserStorageData, signOut }}
+      value={{
+        user,
+        handleUpdateDataUser,
+        isLoadingUserStorageData,
+        signOut,
+        storageToken,
+      }}
     >
       {children}
     </AuthContext.Provider>

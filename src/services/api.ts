@@ -2,13 +2,18 @@
 import axios from 'axios'
 import { AppError } from '@utils/AppError'
 
-type RequestAPIProps = {
+type RequestSetAPIProps = {
   endpoint: string
   data?: any
   setIsLoading?: (status: boolean) => void
 }
 
-const api = axios.create({
+type RequestGetAPIProps = {
+  endpoint: string
+  setIsLoading?: (status: boolean) => void
+}
+
+export const api = axios.create({
   baseURL: 'http://192.168.1.226:3333',
 })
 
@@ -27,7 +32,7 @@ export async function setDataAPI({
   endpoint,
   data,
   setIsLoading,
-}: RequestAPIProps) {
+}: RequestSetAPIProps) {
   try {
     const response = await api.post(endpoint, data)
 
@@ -47,17 +52,24 @@ export async function setDataAPI({
   }
 }
 
-export async function getDataAPI(endpoint: string) {
+export async function getDataAPI({
+  endpoint,
+  setIsLoading,
+}: RequestGetAPIProps) {
   try {
     const response = await api.get(endpoint)
 
-    return response
+    return response.data
   } catch (error) {
     const isAppError = error instanceof AppError
 
     const title = isAppError
       ? error.message
       : 'Não foi possível criar a conta. Tente novamente mais tarde'
+
+    if (setIsLoading) {
+      setIsLoading(false)
+    }
 
     return title
   }

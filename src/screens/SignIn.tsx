@@ -23,7 +23,7 @@ export function SignIn() {
 
   const navigation = useNavigation<AuthNavigatorRoutesProps>()
 
-  const { handleUpdateDataUser } = useAuth()
+  const { handleUpdateDataUser, storageToken } = useAuth()
 
   const {
     control,
@@ -58,7 +58,7 @@ export function SignIn() {
       avatar: response.user.avatar,
     })
 
-    // return data
+    storageToken(response.token)
   }
 
   return (

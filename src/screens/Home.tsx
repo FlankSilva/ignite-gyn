@@ -1,27 +1,72 @@
-import { useState } from 'react'
-import { View, FlatList, Text } from 'react-native'
-import { useNavigation } from '@react-navigation/native'
+import { useState, useEffect, useCallback } from 'react'
+import { View, FlatList, Text, ToastAndroid } from 'react-native'
+import { useNavigation, useFocusEffect } from '@react-navigation/native'
 
 import { Group } from '@components/Group'
 import { HomeHeader } from '@components/HomeHeader'
 import { ExerciseCard } from '@components/ExerciseCard'
 import { AppNavigatorRoutesProps } from '@routes/app.routes'
+import { getDataAPI } from '@services/api'
+import { ExerciseDTO } from '@dtos/ExerciseDTO'
+import { Loading } from '@components/Loading'
 
 export function Home() {
-  const [groups, setGroups] = useState(['Costas', 'Bíceps', 'Tríceps', 'Ombro'])
-  const [exercicises, setExercises] = useState([
-    'Puxada frontal',
-    'Remada curvada',
-    'Remada unilateral',
-    'Levantamento terra',
-  ])
-  const [groupSelected, setGroupSelected] = useState('costas')
+  const [isLoading, setIsLoading] = useState(true)
+  const [groups, setGroups] = useState<string[]>([])
+  const [exercicises, setExercises] = useState<ExerciseDTO[]>([])
+  const [groupSelected, setGroupSelected] = useState(groups[0])
 
   const navigation = useNavigation<AppNavigatorRoutesProps>()
 
-  function handleOpenExerciseDetails() {
-    navigation.navigate('exercise')
+  function handleOpenExerciseDetails(exerciseId: string) {
+    navigation.navigate('exercise', { exerciseId })
   }
+
+  async function fetchGroups() {
+    const response = await getDataAPI({
+      endpoint: '/groups',
+    })
+
+    if (response && typeof response === 'string') {
+      ToastAndroid.show(response, ToastAndroid.SHORT)
+
+      return
+    }
+
+    setGroups(response)
+  }
+
+  useEffect(() => {
+    fetchGroups()
+  }, [])
+
+  useEffect(() => {
+    setGroupSelected(groups[0])
+  }, [groups])
+
+  useFocusEffect(
+    useCallback(() => {
+      async function fetchExercisesByGroup() {
+        setIsLoading(true)
+        const response = await getDataAPI({
+          endpoint: `/exercises/bygroup/${groupSelected}`,
+          setIsLoading,
+        })
+
+        setIsLoading(false)
+
+        if (response && typeof response === 'string') {
+          ToastAndroid.show(response, ToastAndroid.SHORT)
+
+          return
+        }
+
+        setExercises(response)
+      }
+
+      fetchExercisesByGroup()
+    }, [groupSelected]),
+  )
 
   return (
     <View className="flex-1">
@@ -45,22 +90,31 @@ export function Home() {
         contentContainerStyle={{ paddingRight: 50 }}
       />
 
-      <View className="flex-1 px-8">
-        <View className="flex-row justify-between mb-5">
-          <Text className="text-gray-200 text-base">Exercícios</Text>
-          <Text className="text-gray-200 text-base">{exercicises.length}</Text>
-        </View>
+      {isLoading ? (
+        <Loading />
+      ) : (
+        <View className="flex-1 px-8">
+          <View className="flex-row justify-between mb-5">
+            <Text className="text-gray-200 text-base">Exercícios</Text>
+            <Text className="text-gray-200 text-base">
+              {exercicises.length}
+            </Text>
+          </View>
 
-        <FlatList
-          data={exercicises}
-          keyExtractor={(item) => item}
-          renderItem={({ item }) => (
-            <ExerciseCard onPress={handleOpenExerciseDetails} />
-          )}
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ paddingBottom: 80 }}
-        />
-      </View>
+          <FlatList
+            data={exercicises}
+            keyExtractor={(item) => item.id}
+            renderItem={({ item }) => (
+              <ExerciseCard
+                data={item}
+                onPress={() => handleOpenExerciseDetails(item.id)}
+              />
+            )}
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{ paddingBottom: 80 }}
+          />
+        </View>
+      )}
     </View>
   )
 }
