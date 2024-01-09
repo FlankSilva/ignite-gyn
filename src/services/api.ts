@@ -40,6 +40,8 @@ export async function setDataAPI({
   } catch (error) {
     const isAppError = error instanceof AppError
 
+    console.log(error)
+
     const title = isAppError
       ? error.message
       : 'Não foi possível criar a conta. Tente novamente mais tarde'
